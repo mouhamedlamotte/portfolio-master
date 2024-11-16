@@ -1,0 +1,216 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SkillsCategory {
+  FRONTEND
+  BACKEND
+  DATABASE
+  DEVOPS
+  DESIGN
+  MOBILE
+  AI
+  CLOUD
+  TESTING
+  SECURITY
+  NETWORKING
+  PROJECT_MANAGEMENT
+  COMMUNICATION
+  LEADERSHIP
+  TEAMWORK
+  PROBLEM_SOLVING
+  TIME_MANAGEMENT
+  CREATIVITY
+  ADAPTABILITY
+  NEGOTIATION
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  INTERN
+  FREELANCE
+  CONTRACT
+  REMOTE
+  TEMPORARY
+}
+
+enum MediaTypes {
+  IMAGE
+  VIDEO
+  AUDIO
+  OTHER
+}
+
+enum Provider {
+  GITHUB
+  GOOGLE
+  LINKEDIN
+  FACEBOOK
+}
+
+model Skill {
+  id          Int            @id @default(autoincrement())
+  name        String         @db.VarChar()
+  logo        String?
+  category    SkillsCategory
+  verified    Boolean        @default(false)
+  createdBy   User           @relation(fields: [createdById], references: [id])
+  createdById Int
+  UserSkill   UserSkill[]
+
+  Experience Experience[]
+
+  Education Education[]
+}
+
+model User {
+  id           Int         @id @default(autoincrement())
+  username     String      @unique @default(cuid()) @db.VarChar(30)
+  name         String      @db.VarChar(150)
+  email        String      @unique @db.VarChar(150)
+  password     String?     @db.VarChar(200)
+  createdSkill Skill[]
+  UserSkill    UserSkill[]
+  Profile      Profile?
+  Role         Role
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  provider Provider?
+
+  Experience Experience[]
+
+  Education Education[]
+
+  Hobby Hobby[]
+
+  Project Project[]
+
+  Certification Certification[]
+}
+
+model Profile {
+  id         Int         @id @default(autoincrement())
+  user       User        @relation(fields: [userId], references: [id])
+  userId     Int         @unique
+  bio        String?     @db.Text()
+  job        String      @db.VarChar(200)
+  mainSkills UserSkill[]
+}
+
+model UserSkill {
+  id      Int        @id @default(autoincrement())
+  skills  Skill[]
+  level   SkillLevel
+  user    User       @relation(fields: [userId], references: [id])
+  userId  Int
+  Profile Profile[]
+}
+
+model Experience {
+  id      Int     @id @default(autoincrement())
+  name    String  @db.VarChar(100)
+  jobType JobType
+
+  factoryName           String    @db.VarChar(100)
+  factoryLogo           String?   @db.VarChar(200)
+  location              String?   @db.VarChar(100)
+  startDate             DateTime
+  endDate               DateTime?
+  isActualyWorkingThere Boolean   @default(false)
+  description           String?   @db.Text()
+  user                  User      @relation(fields: [userId], references: [id])
+  userId                Int
+  skills                Skill[]
+  media                 Media[]
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+}
+
+model Education {
+  id          Int      @id @default(autoincrement())
+  school      String
+  degree      String
+  school_logo String?
+  location    String?
+  startDate   DateTime
+  endDate     DateTime
+  activities  String?
+  skills      Skill[]
+  description String?  @db.Text()
+  user        User     @relation(fields: [userId], references: [id])
+  userId      Int
+  media       Media[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Hobby {
+  id     Int    @id @default(autoincrement())
+  name   String
+  user   User   @relation(fields: [userId], references: [id])
+  userId Int
+}
+
+model Project {
+  id            Int       @id @default(autoincrement())
+  title         String
+  description   String?   @db.Text()
+  startDate     DateTime
+  endDate       DateTime?
+  lastUpdatDate DateTime  @updatedAt
+  githubLink    String?
+  websiteLink   String?
+  media         Media[]
+  user          User      @relation(fields: [userId], references: [id])
+  userId        Int
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Certification {
+  id         Int       @id @default(autoincrement())
+  title      String
+  issued_by  String
+  issue_date DateTime?
+  link       String?
+  media      Media[]
+  user       User      @relation(fields: [userId], references: [id])
+  userId     Int
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Media {
+  id        Int        @id @default(autoincrement())
+  url       String
+  type      MediaTypes
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  Experience Experience[]
+
+  Education Education[]
+
+  Project Project[]
+
+  Certification Certification[]
+}
