@@ -4,9 +4,31 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
         const userId = await  getUserIdByApikey(req.headers.get("api-key") ?? "")
-        const profile = await prismaClient.profile.findFirst({
+        const profile = await prismaClient.profile.findUnique({
             where : {
                 userId : userId
+            },
+            select : {
+                id : true,
+                bio : true,
+                job : true,
+                mainSkills : true,
+                avatar : true,
+                cv : {
+                select : {
+                    name : true,
+                    url : true,
+                    type : true,
+                    id : true
+                }
+                },
+                user  : {
+                    select : {
+                        name : true,
+                        email   : true
+                        
+                    }
+                }
             }
         })
         if (profile) {

@@ -7,6 +7,10 @@ export async function GET(req: NextRequest) {
         const hobbies = await prismaClient.hobby.findMany({
             where : {
                 userId : userId
+            },
+            select : {
+                id : true,
+                name : true
             }
         })
         if (hobbies) {

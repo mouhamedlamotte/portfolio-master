@@ -7,6 +7,34 @@ export async function GET(req: NextRequest) {
         const experience = await prismaClient.experience.findMany({
             where : {
                 userId : userId
+            },
+            select : {
+                id : true,
+                name : true,
+                jobType : true,
+                factoryName : true,
+                factoryLogo : true,
+                location : true,
+                startDate : true,
+                endDate : true,
+                isActualyWorkingThere : true,
+                description : true,
+                skills : {
+                    select : {
+                        id  : true,
+                        logo : true,
+                        name : true,
+                        category : true,
+                    }
+                }, 
+                media : {
+                    select : {
+                        id : true,
+                        type : true,
+                        url : true
+                        // name : true
+                    }
+                }
             }
         })
         if (experience) {

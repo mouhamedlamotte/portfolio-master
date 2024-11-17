@@ -7,6 +7,23 @@ export async function GET(req: NextRequest) {
         const project = await prismaClient.project.findMany({
             where : {
                 userId : userId
+            },
+            select : {
+                id : true,
+                title : true,
+                description: true,
+                startDate: true,
+                endDate: true,
+                lastUpdatDate: true,
+                githubLink: true,
+                websiteLink: true,
+                media: {
+                    select : {
+                        id : true,
+                        type : true,
+                        url : true
+                    }
+                }
             }
         })
         if (project) {

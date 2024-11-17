@@ -13,6 +13,9 @@ CREATE TYPE "JobType" AS ENUM ('FULL_TIME', 'PART_TIME', 'INTERN', 'FREELANCE', 
 -- CreateEnum
 CREATE TYPE "MediaTypes" AS ENUM ('IMAGE', 'VIDEO', 'AUDIO', 'OTHER');
 
+-- CreateEnum
+CREATE TYPE "Provider" AS ENUM ('GITHUB', 'GOOGLE', 'LINKEDIN', 'FACEBOOK');
+
 -- CreateTable
 CREATE TABLE "Skill" (
     "id" SERIAL NOT NULL,
@@ -29,13 +32,13 @@ CREATE TABLE "Skill" (
 CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
     "username" VARCHAR(30) NOT NULL,
-    "firstName" VARCHAR(50) NOT NULL,
-    "lastName" VARCHAR(50) NOT NULL,
+    "name" VARCHAR(150) NOT NULL,
     "email" VARCHAR(150) NOT NULL,
-    "password" VARCHAR(200) NOT NULL,
+    "password" VARCHAR(200),
     "Role" "Role" NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "provider" "Provider",
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -53,6 +56,7 @@ CREATE TABLE "Profile" (
 -- CreateTable
 CREATE TABLE "UserSkill" (
     "id" SERIAL NOT NULL,
+    "skillId" INTEGER NOT NULL,
     "level" "SkillLevel" NOT NULL,
     "userId" INTEGER NOT NULL,
 
@@ -148,7 +152,28 @@ CREATE TABLE "Media" (
 );
 
 -- CreateTable
-CREATE TABLE "_SkillToUserSkill" (
+CREATE TABLE "Devices" (
+    "id" SERIAL NOT NULL,
+    "apiKey" TEXT NOT NULL,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "userId" INTEGER NOT NULL,
+
+    CONSTRAINT "Devices_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Text" (
+    "id" SERIAL NOT NULL,
+    "text" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Text_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "_UserSkills" (
     "A" INTEGER NOT NULL,
     "B" INTEGER NOT NULL
 );
@@ -205,10 +230,22 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 CREATE UNIQUE INDEX "Profile_userId_key" ON "Profile"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "_SkillToUserSkill_AB_unique" ON "_SkillToUserSkill"("A", "B");
+CREATE UNIQUE INDEX "Hobby_name_userId_key" ON "Hobby"("name", "userId");
 
 -- CreateIndex
-CREATE INDEX "_SkillToUserSkill_B_index" ON "_SkillToUserSkill"("B");
+CREATE UNIQUE INDEX "Devices_apiKey_key" ON "Devices"("apiKey");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Devices_userId_key" ON "Devices"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Devices_apiKey_userId_key" ON "Devices"("apiKey", "userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "_UserSkills_AB_unique" ON "_UserSkills"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_UserSkills_B_index" ON "_UserSkills"("B");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_ProfileToUserSkill_AB_unique" ON "_ProfileToUserSkill"("A", "B");
@@ -259,6 +296,9 @@ ALTER TABLE "Skill" ADD CONSTRAINT "Skill_createdById_fkey" FOREIGN KEY ("create
 ALTER TABLE "Profile" ADD CONSTRAINT "Profile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "UserSkill" ADD CONSTRAINT "UserSkill_skillId_fkey" FOREIGN KEY ("skillId") REFERENCES "Skill"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "UserSkill" ADD CONSTRAINT "UserSkill_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -277,10 +317,13 @@ ALTER TABLE "Project" ADD CONSTRAINT "Project_userId_fkey" FOREIGN KEY ("userId"
 ALTER TABLE "Certification" ADD CONSTRAINT "Certification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_SkillToUserSkill" ADD CONSTRAINT "_SkillToUserSkill_A_fkey" FOREIGN KEY ("A") REFERENCES "Skill"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Devices" ADD CONSTRAINT "Devices_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_SkillToUserSkill" ADD CONSTRAINT "_SkillToUserSkill_B_fkey" FOREIGN KEY ("B") REFERENCES "UserSkill"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_UserSkills" ADD CONSTRAINT "_UserSkills_A_fkey" FOREIGN KEY ("A") REFERENCES "Skill"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_UserSkills" ADD CONSTRAINT "_UserSkills_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_ProfileToUserSkill" ADD CONSTRAINT "_ProfileToUserSkill_A_fkey" FOREIGN KEY ("A") REFERENCES "Profile"("id") ON DELETE CASCADE ON UPDATE CASCADE;

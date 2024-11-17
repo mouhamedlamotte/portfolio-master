@@ -75,52 +75,67 @@ model Skill {
   createdBy   User           @relation(fields: [createdById], references: [id])
   createdById Int
   UserSkill   UserSkill[]
+  Experience  Experience[]
+  Education   Education[]
 
-  Experience Experience[]
+  User User[] @relation("UserSkills")
 
-  Education Education[]
+  Project Project[]
 }
 
 model User {
-  id           Int         @id @default(autoincrement())
-  username     String      @unique @default(cuid()) @db.VarChar(30)
-  name         String      @db.VarChar(150)
-  email        String      @unique @db.VarChar(150)
-  password     String?     @db.VarChar(200)
-  createdSkill Skill[]
-  UserSkill    UserSkill[]
-  Profile      Profile?
-  Role         Role
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-
-  provider Provider?
-
-  Experience Experience[]
-
-  Education Education[]
-
-  Hobby Hobby[]
-
-  Project Project[]
-
+  id            Int             @id @default(autoincrement())
+  username      String          @unique @default(cuid()) @db.VarChar(30)
+  name          String          @db.VarChar(150)
+  email         String          @unique @db.VarChar(150)
+  password      String?         @db.VarChar(200)
+  createdSkill  Skill[]         @relation("UserSkills")
+  UserSkill     UserSkill[]
+  Profile       Profile?
+  Role          Role
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  provider      Provider?
+  Experience    Experience[]
+  Education     Education[]
+  Hobby         Hobby[]
+  Project       Project[]
   Certification Certification[]
+  Devices       Devices[]
 
-  Devices Devices[]
+  Skill Skill[]
+}
+
+model SocialLink {
+  id        Int      @id @default(autoincrement())
+  url       String
+  name      String
+  profile   Profile  @relation(fields: [profileId], references: [id])
+  profileId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, profileId])
 }
 
 model Profile {
   id         Int         @id @default(autoincrement())
   user       User        @relation(fields: [userId], references: [id])
   userId     Int         @unique
+  avatar     String?     @db.VarChar(200)
+  cv         Media?      @relation(fields: [cvId], references: [id])
+  cvId       Int?        @unique
   bio        String?     @db.Text()
   job        String      @db.VarChar(200)
   mainSkills UserSkill[]
+
+  SocialLink SocialLink[]
 }
 
 model UserSkill {
   id      Int        @id @default(autoincrement())
-  skills  Skill[]
+  skill   Skill      @relation(fields: [skillId], references: [id])
+  skillId Int
   level   SkillLevel
   user    User       @relation(fields: [userId], references: [id])
   userId  Int
@@ -128,10 +143,9 @@ model UserSkill {
 }
 
 model Experience {
-  id      Int     @id @default(autoincrement())
-  name    String  @db.VarChar(100)
-  jobType JobType
-
+  id                    Int       @id @default(autoincrement())
+  name                  String    @db.VarChar(100)
+  jobType               JobType
   factoryName           String    @db.VarChar(100)
   factoryLogo           String?   @db.VarChar(200)
   location              String?   @db.VarChar(100)
@@ -139,6 +153,7 @@ model Experience {
   endDate               DateTime?
   isActualyWorkingThere Boolean   @default(false)
   description           String?   @db.Text()
+  story                 String?   @db.Text()
   user                  User      @relation(fields: [userId], references: [id])
   userId                Int
   skills                Skill[]
@@ -170,6 +185,7 @@ model Hobby {
   name   String
   user   User   @relation(fields: [userId], references: [id])
   userId Int
+
   @@unique([name, userId])
 }
 
@@ -187,35 +203,38 @@ model Project {
   userId        Int
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  skills        Skill[]
 }
 
 model Certification {
-  id         Int       @id @default(autoincrement())
-  title      String
-  issued_by  String
-  issue_date DateTime?
-  link       String?
-  media      Media[]
-  user       User      @relation(fields: [userId], references: [id])
-  userId     Int
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?   @db.Text()
+  issued_by   String
+  issue_date  DateTime?
+  link        String?
+  media       Media[]
+  user        User      @relation(fields: [userId], references: [id])
+  userId      Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([title, issued_by, userId])
 }
 
 model Media {
-  id        Int        @id @default(autoincrement())
-  url       String
-  type      MediaTypes
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-
-  Experience Experience[]
-
-  Education Education[]
-
-  Project Project[]
-
+  id            Int             @id @default(autoincrement())
+  url           String
+  type          MediaTypes
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  Experience    Experience[]
+  Education     Education[]
+  Project       Project[]
   Certification Certification[]
+  name          String?
+  primary       Boolean         @default(false)
+  profile       Profile[]
 }
 
 model Devices {
@@ -225,9 +244,9 @@ model Devices {
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id])
   userId    Int      @unique
+
   @@unique([apiKey, userId])
 }
-
 
 model Text {
   id        Int      @id @default(autoincrement())

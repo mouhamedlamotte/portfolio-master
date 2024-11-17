@@ -7,6 +7,19 @@ export async function GET(req: NextRequest) {
         const skills = await prismaClient.userSkill.findMany({
             where : {
                 userId : userId
+            },
+            select : {
+                id : true,
+                level : true,
+                skill : {
+                    select : {
+                        id : true,
+                        name : true,
+                        logo : true,
+                        category : true
+                        
+                    }
+                }
             }
         })
         

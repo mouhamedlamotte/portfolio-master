@@ -7,6 +7,20 @@ export async function GET(req: NextRequest) {
         const certifications = await prismaClient.certification.findMany({
             where : {
                 userId : userId
+            },
+            select : {
+                title : true,
+                issued_by : true,
+                issue_date : true,
+                link : true,
+                id : true,
+                media : {
+                    select : {
+                        id : true,
+                        type : true,
+                        url : true
+                    }
+                }
             }
         })
         if (certifications) {
