@@ -105,6 +105,8 @@ model User {
   Project Project[]
 
   Certification Certification[]
+
+  Devices Devices[]
 }
 
 model Profile {
@@ -168,6 +170,7 @@ model Hobby {
   name   String
   user   User   @relation(fields: [userId], references: [id])
   userId Int
+  @@unique([name, userId])
 }
 
 model Project {
@@ -213,4 +216,22 @@ model Media {
   Project Project[]
 
   Certification Certification[]
+}
+
+model Devices {
+  id        Int      @id @default(autoincrement())
+  apiKey    String   @unique @default(cuid())
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int      @unique
+  @@unique([apiKey, userId])
+}
+
+
+model Text {
+  id        Int      @id @default(autoincrement())
+  text      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

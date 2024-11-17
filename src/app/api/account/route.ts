@@ -11,7 +11,8 @@ export async function POST (req : NextRequest){
                 name : data.name,
                 email : data.email,
                 provider : data.provider,
-                Role : "USER" 
+                Role : "USER", 
+                password : data.password
             }
         })
         return NextResponse.json({
