@@ -7,7 +7,7 @@ import type { NextRequest } from "next/server";
 export async function middleware(request: NextRequest) {
   const headers = request.headers;
   const api_key = headers.get("api-key");
-  if (request.nextUrl.pathname.includes("/api/public")) {
+  if (request.nextUrl.pathname.includes("/api/public") || request.nextUrl.pathname.includes("/api/account")) {
     {
       if (!api_key) {
         return NextResponse.json({ message: "missing api-key", success: false }, { status: 401 });

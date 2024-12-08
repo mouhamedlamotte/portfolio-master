@@ -3,8 +3,12 @@ import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials"
 import GitHubProvider from "next-auth/providers/github";
 import LinkedInProvider from "next-auth/providers/linkedin";
+import { prismaClient } from "@/lib/prisma.client";
 
 const handler = NextAuth({
+  pages: {
+    signIn: "/auth/login",
+  },
     providers: [
         GoogleProvider({
           clientId: process.env.GOOGLE_CLIENT_ID ?? "",
@@ -21,7 +25,7 @@ const handler = NextAuth({
             email: { label: "email",  type: "text", placeholder: "jsmith" },
             password: { label: "Password", type: "password" }
           },
-          async authorize(credentials, req) {
+          async authorize(credentials) {
 
             const res = await fetch("http://localhost:3000/api/auth/token", {
               method: 'POST',
@@ -48,8 +52,59 @@ const handler = NextAuth({
           clientId: process.env.LINKEDIN_CLIENT_ID ?? "",
           clientSecret: process.env.LINKEDIN_CLIENT_SECRET ?? ""
         })
-    ]
-    
+    ],
+  callbacks: {
+
+  async signIn({ user, account, profile }) {
+    console.log("Sign-in callback triggered", user, account, profile);
+
+    const verifyUser = await prismaClient.user.findUnique({
+      where : {
+        email : user.email ?? ""
+      }
+    })
+    if (!verifyUser) {
+      const newUser = await prismaClient.user.create({
+        data : {
+          name : user.name ?? "",
+          email : user.email ?? "",
+          provider : account?.provider.toUpperCase() as "GITHUB" | "GOOGLE" | "LINKEDIN" ?? "",
+          password : "",
+          Role : "USER"
+        },
+        select : {
+          id : true,
+        }
+      })
+
+      if (newUser) {
+        await prismaClient.profile.create({
+          data : {
+            avatar : user.image  ?? "",
+            userId : newUser.id,
+            metadata: {
+              account: account ? JSON.parse(JSON.stringify(account)) : null,
+              profile: profile ? JSON.parse(JSON.stringify(profile)) : null,
+            },
+          }
+        })
+
+        await prismaClient.devices.create({
+          data : {
+            user : {
+              connect : {
+                id : newUser.id
+              }
+            }
+          }
+        })
+      }      
+      return true
+    }
+
+    return true;
+  },
+  }
     
 })
 

@@ -64,6 +64,7 @@ enum Provider {
   GOOGLE
   LINKEDIN
   FACEBOOK
+  EMAILANDPASSWORD
 }
 
 model Skill {
@@ -126,10 +127,11 @@ model Profile {
   cv         Media?      @relation(fields: [cvId], references: [id])
   cvId       Int?        @unique
   bio        String?     @db.Text()
-  job        String      @db.VarChar(200)
+  job        String?      @db.VarChar(200)
   mainSkills UserSkill[]
 
   SocialLink SocialLink[]
+  metadata   Json?  
 }
 
 model UserSkill {
@@ -246,6 +248,7 @@ model Devices {
   userId    Int      @unique
 
   @@unique([apiKey, userId])
+  Visit Visit[]
 }
 
 model Text {
@@ -253,4 +256,38 @@ model Text {
   text      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+
+model Visit {
+  id           String          @id @default(uuid())
+  ipAddress    String?         
+  country      String?         
+  region       String?         
+  deviceType   String?        
+  os           String?         
+  browser      String?         
+  language     String?         
+  referrer     String?         
+  visitedPage  String          
+  visitDate    DateTime        @default(now()) 
+  sessionId    String?       
+  interactions PageInteraction[] 
+  device       Devices? @relation(fields: [deviceId], references: [id])
+  deviceId     Int? 
+
+  @@index([ipAddress, visitDate])
+}
+
+model PageInteraction {
+  id           String  @id @default(uuid())
+  visitId      String  // Clé étrangère vers Visit
+  visit        Visit   @relation(fields: [visitId], references: [id])
+  actionType   String  // Type d’action (click, form_submit, etc.)
+  targetElement String? // Élément interactif ciblé
+  timestamp    DateTime @default(now()) // Date et heure de l’interaction
+
+  @@unique([visitId, actionType, targetElement])
+
+  @@index([actionType, timestamp]) // Index pour analyser les interactions
 }

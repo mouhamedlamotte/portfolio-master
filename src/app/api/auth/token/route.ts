@@ -18,6 +18,12 @@ export async function POST(req: NextRequest) {
             where : {
                 email : data.email,
                 password : data.password
+            },
+            select : {
+                id : true,
+                username : true,
+                name : true,
+                email : true
             }
         })
         if (!user) {
